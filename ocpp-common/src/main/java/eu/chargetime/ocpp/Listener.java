@@ -1,4 +1,5 @@
 package eu.chargetime.ocpp;
+import java.io.IOException;
 /*
    ChargeTime.eu - Java-OCA-OCPP
 
@@ -26,7 +27,8 @@ package eu.chargetime.ocpp;
 */
 
 public interface Listener {
-  void open(String hostname, int port, ListenerEvents listenerEvents);
+  void open(String hostname, int port, ListenerEvents listenerEvents)
+        throws IOException;
 
   void close();
 
