@@ -6,6 +6,7 @@ import eu.chargetime.ocpp.*;
 import eu.chargetime.ocpp.feature.Feature;
 import eu.chargetime.ocpp.model.Request;
 import eu.chargetime.ocpp.model.SessionInformation;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
@@ -61,7 +62,7 @@ public class ServerTest {
   @Mock private IPromiseRepository promiseRepository;
 
   @Before
-  public void setup() {
+  public void setup() throws IOException {
     UUID sessionId = UUID.randomUUID();
     when(request.validate()).thenReturn(true);
     when(session.getSessionId()).thenReturn(sessionId);
@@ -80,7 +81,7 @@ public class ServerTest {
   }
 
   @Test
-  public void newSession_serverIsListening_sessionIsAccepted() {
+  public void newSession_serverIsListening_sessionIsAccepted() throws IOException {
     // Given
     server.open(LOCALHOST, PORT, serverEvents);
 
@@ -92,7 +93,7 @@ public class ServerTest {
   }
 
   @Test
-  public void newSession_serverIsListening_callbackWithIndex0() {
+  public void newSession_serverIsListening_callbackWithIndex0() throws IOException  {
     // Given
     server.open(LOCALHOST, PORT, serverEvents);
 
@@ -117,7 +118,8 @@ public class ServerTest {
   }
 
   @Test
-  public void handleRequest_callsFeatureHandleRequest() throws UnsupportedFeatureException {
+  public void handleRequest_callsFeatureHandleRequest() 
+    throws UnsupportedFeatureException, IOException {
     // Given
     server.open(LOCALHOST, PORT, serverEvents);
     listenerEvents.newSession(session, information);
