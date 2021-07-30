@@ -80,6 +80,22 @@ public class ServerTest {
     server = new Server(listener, featureRepository, promiseRepository);
   }
 
+//TODO: Create proper testcase for `Server.open` exception thrown when a port is unavailable
+  @Test
+  public void openServer_portUnavailable() throws IOException {
+    // Given
+    server.open(LOCALHOST, PORT, serverEvents);
+
+    // When
+    Server serverB = new Server();
+    try {
+        serverB.open(LOCALHOST, PORT, serverEvents);
+    } catch (IOException ex) {
+        // Then
+        verify(ex, ex instanceof SocketException).accept(any());
+    }
+  }
+
   @Test
   public void newSession_serverIsListening_sessionIsAccepted() throws IOException {
     // Given
