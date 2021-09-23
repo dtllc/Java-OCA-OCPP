@@ -30,13 +30,15 @@ import eu.chargetime.ocpp.model.Confirmation;
 import eu.chargetime.ocpp.model.Request;
 import java.util.UUID;
 import java.util.concurrent.CompletionStage;
+import java.io.IOException;
 
 public interface IServerAPI {
   void addFeatureProfile(Profile profile);
 
   void closeSession(UUID session);
 
-  void open(String host, int port, ServerEvents serverEvents);
+  void open(String host, int port, ServerEvents serverEvents)
+        throws IOException;
 
   void close();
 

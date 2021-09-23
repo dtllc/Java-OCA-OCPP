@@ -28,6 +28,7 @@ package eu.chargetime.ocpp;
 import eu.chargetime.ocpp.feature.Feature;
 import eu.chargetime.ocpp.model.Confirmation;
 import eu.chargetime.ocpp.model.Request;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -73,7 +74,8 @@ public class Server {
    * @param port the port number of the server.
    * @param serverEvents Callback handler for server specific events.
    */
-  public void open(String hostname, int port, ServerEvents serverEvents) {
+  public void open(String hostname, int port, ServerEvents serverEvents)
+        throws IOException {
 
     listener.open(
         hostname,

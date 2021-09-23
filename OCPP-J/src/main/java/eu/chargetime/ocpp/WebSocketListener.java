@@ -28,12 +28,18 @@ package eu.chargetime.ocpp;
 import eu.chargetime.ocpp.model.SessionInformation;
 import eu.chargetime.ocpp.wss.WssFactoryBuilder;
 import java.io.IOException;
-import java.net.ConnectException;
+import java.lang.InterruptedException;
+import java.net.SocketException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.handshake.ClientHandshake;
@@ -45,6 +51,7 @@ public class WebSocketListener implements Listener {
   private static final Logger logger = LoggerFactory.getLogger(WebSocketListener.class);
 
   private static final int TIMEOUT_IN_MILLIS = 10000;
+  private static final int SOCKET_TIMEOUT_MILLIS = 2000;
 
   private final ISessionFactory sessionFactory;
   private final List<Draft> drafts;
@@ -69,7 +76,9 @@ public class WebSocketListener implements Listener {
   }
 
   @Override
-  public void open(String hostname, int port, ListenerEvents handler) {
+  public void open(String hostname, int port, ListenerEvents handler)
+        throws IOException {
+    final CompletableFuture<Void> socketBound = new CompletableFuture<Void>();
     server =
         new WebSocketServer(new InetSocketAddress(hostname, port), drafts) {
           @Override
@@ -138,20 +147,16 @@ public class WebSocketListener implements Listener {
                 (webSocket != null)
                     ? webSocket.getResourceDescriptor()
                     : "not defined (webSocket is null)";
-
-            if (ex instanceof ConnectException) {
-              logger.error(
-                  "On error (resource descriptor: " + resourceDescriptor + ") triggered caused by:",
-                  ex);
-            } else {
-              logger.error(
-                  "On error (resource descriptor: " + resourceDescriptor + ") triggered:", ex);
+            logger.error("On error (resource descriptor: " + resourceDescriptor+")");
+            if (ex instanceof SocketException) {
+                socketBound.completeExceptionally(ex);
             }
           }
 
           @Override
           public void onStart() {
             logger.debug("Server socket bound");
+            socketBound.complete(null);
           }
         };
 
@@ -161,6 +166,17 @@ public class WebSocketListener implements Listener {
 
     configure();
     server.start();
+    try {
+        socketBound.get(SOCKET_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+    } catch (ExecutionException ex) {
+        close();
+        throw (SocketException) ex.getCause();
+    } catch (CancellationException | InterruptedException | TimeoutException ex) {
+        close();
+        SocketException se = new SocketException("Unable to bind WebSocketServer socket");
+        se.initCause(ex);
+        throw se;
+    }
     closed = false;
   }
 

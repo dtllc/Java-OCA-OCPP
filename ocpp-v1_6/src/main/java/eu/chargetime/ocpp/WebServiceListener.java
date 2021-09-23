@@ -55,20 +55,16 @@ public class WebServiceListener implements Listener {
   }
 
   @Override
-  public void open(String hostname, int port, ListenerEvents listenerEvents) {
+  public void open(String hostname, int port, ListenerEvents listenerEvents) throws IOException {
     events = listenerEvents;
     fromUrl = String.format("http://%s:%d", hostname, port);
-    try {
-      server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
-      server.createContext("/", new WSHttpHandler(WSDL_CENTRAL_SYSTEM, new WSHttpEventHandler()));
+    server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
+    server.createContext("/", new WSHttpHandler(WSDL_CENTRAL_SYSTEM, new WSHttpEventHandler()));
 
-      server.setExecutor(java.util.concurrent.Executors.newCachedThreadPool());
-      server.start();
+    server.setExecutor(java.util.concurrent.Executors.newCachedThreadPool());
+    server.start();
 
-      closed = false;
-    } catch (IOException e) {
-      logger.warn("open() failed", e);
-    }
+    closed = false;
   }
 
   @Override

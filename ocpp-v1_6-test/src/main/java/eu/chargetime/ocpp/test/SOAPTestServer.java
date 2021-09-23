@@ -30,6 +30,7 @@ import eu.chargetime.ocpp.feature.profile.Profile;
 import eu.chargetime.ocpp.feature.profile.ServerCoreProfile;
 import eu.chargetime.ocpp.model.Confirmation;
 import eu.chargetime.ocpp.model.Request;
+import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 
@@ -58,7 +59,7 @@ public class SOAPTestServer implements IServerAPI {
   }
 
   @Override
-  public void open(String host, int port, ServerEvents serverEvents) {
+  public void open(String host, int port, ServerEvents serverEvents) throws IOException {
     server.open(host, port, serverEvents);
   }
 
